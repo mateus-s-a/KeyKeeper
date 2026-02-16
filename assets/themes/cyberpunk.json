@@ -1,0 +1,15 @@
+{
+    "theme_name": "Cyberpunk Neon",
+    "description": "Vibrant cyberpunk-inspired theme with neon colors",
+    "appearance": {
+        "background_color": "#0a0a0a",
+        "active_key_color": "#ff00ff",
+        "inactive_key_color": "#1a001a",
+        "text_color": "#00ffff",
+        "font_family": "Arial",
+        "font_size": 28,
+        "key_padding": 15,
+        "border_width": 3,
+        "border_color": "#ff00ff"
+    }
+}

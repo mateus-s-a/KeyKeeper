@@ -1,0 +1,36 @@
+{
+    "keys_to_monitor": [
+        "d",
+        "f",
+        "j",
+        "k"
+    ],
+    "overlay": {
+        "width": 400,
+        "height": 150,
+        "position": {
+            "x": 100,
+            "y": 100
+        },
+        "always_on_top": true,
+        "transparent": true,
+        "opacity": 0.9
+    },
+    "appearance": {
+        "background_color": "#1a1a1a",
+        "active_key_color": "#00ff00",
+        "inactive_key_color": "#333333",
+        "text_color": "#ffffff",
+        "font_family": "Arial",
+        "font_size": 24,
+        "key_padding": 10,
+        "border_width": 2,
+        "border_color": "#666666"
+    },
+    "statistics": {
+        "enabled": false,
+        "show_kps": false,
+        "show_press_count": false,
+        "kps_update_interval": 1.0
+    }
+}

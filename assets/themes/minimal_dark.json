@@ -1,0 +1,15 @@
+{
+    "theme_name": "Minimal Dark",
+    "description": "Clean and minimal dark theme",
+    "appearance": {
+        "background_color": "#1a1a1a",
+        "active_key_color": "#ffffff",
+        "inactive_key_color": "#333333",
+        "text_color": "#000000",
+        "font_family": "Arial",
+        "font_size": 24,
+        "key_padding": 10,
+        "border_width": 2,
+        "border_color": "#666666"
+    }
+}

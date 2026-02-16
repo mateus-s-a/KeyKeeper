@@ -1,0 +1,15 @@
+{
+    "theme_name": "Matrix Green",
+    "description": "Classic green-on-black matrix style",
+    "appearance": {
+        "background_color": "#000000",
+        "active_key_color": "#00ff00",
+        "inactive_key_color": "#003300",
+        "text_color": "#00ff00",
+        "font_family": "Courier",
+        "font_size": 26,
+        "key_padding": 12,
+        "border_width": 2,
+        "border_color": "#00ff00"
+    }
+}

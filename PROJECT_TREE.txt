@@ -1,0 +1,103 @@
+KEYBOARD OVERLAY APPLICATION
+============================
+
+Project Directory Structure:
+
+keyboard-overlay/
+│
+├── 📄 main.py                          ← START HERE! Application entry point
+├── 📄 requirements.txt                 ← Python dependencies to install
+├── 📄 README.md                        ← Project overview and introduction
+├── 📄 .gitignore                       ← Git ignore configuration
+├── 📄 PROJECT_TREE.txt                 ← This file (visual structure)
+│
+├── 📁 src/                             ← Main source code directory
+│   │
+│   ├── 📁 core/                        ← Core application logic
+│   │   ├── 📄 __init__.py
+│   │   └── 📄 app.py                   ← Main controller (orchestrates everything)
+│   │
+│   ├── 📁 gui/                         ← Graphical user interface
+│   │   ├── 📄 __init__.py
+│   │   └── 📄 overlay_window.py        ← Transparent overlay window
+│   │
+│   ├── 📁 input/                       ← Keyboard input handling
+│   │   ├── 📄 __init__.py
+│   │   └── 📄 keyboard_listener.py     ← Captures keyboard events
+│   │
+│   ├── 📁 config/                      ← Configuration management
+│   │   ├── 📄 __init__.py
+│   │   ├── 📄 config_manager.py        ← Loads/saves configuration
+│   │   └── 📄 default_config.json      ← Default settings (CUSTOMIZE THIS!)
+│   │
+│   └── 📁 utils/                       ← Utility functions
+│       └── 📄 __init__.py
+│
+├── 📁 assets/                          ← Static resources
+│   │
+│   ├── 📁 fonts/                       ← Custom fonts (add your own!)
+│   │   └── (empty - ready for fonts)
+│   │
+│   └── 📁 themes/                      ← Visual themes
+│       ├── 📄 cyberpunk.json           ← Neon cyberpunk theme
+│       ├── 📄 matrix.json              ← Green matrix theme
+│       └── 📄 minimal_dark.json        ← Clean minimal theme
+│
+├── 📁 tests/                           ← Test suite
+│   ├── 📄 __init__.py
+│   └── 📄 test_config.py               ← Configuration tests
+│
+└── 📁 docs/                            ← Documentation
+    ├── 📄 QUICKSTART.md                ← Quick start guide (READ THIS FIRST!)
+    ├── 📄 DEVELOPMENT.md               ← Developer guide
+    └── 📄 PROJECT_STRUCTURE.md         ← Detailed structure info
+
+
+QUICK START:
+============
+
+1. Install dependencies:
+   $ pip install -r requirements.txt
+
+2. Run the application:
+   $ python main.py
+
+3. Customize keys in:
+   src/config/default_config.json
+
+4. Read the guides in:
+   docs/QUICKSTART.md
+
+
+KEY FILES TO EDIT:
+==================
+
+🔧 src/config/default_config.json  → Change keys, colors, position
+🎨 assets/themes/*.json             → Apply different visual themes
+📝 docs/QUICKSTART.md               → Learn customization options
+
+
+ARCHITECTURE OVERVIEW:
+======================
+
+main.py
+  ↓
+core/app.py (KeyboardOverlayApp)
+  ├── config/config_manager.py (ConfigManager)
+  ├── input/keyboard_listener.py (KeyboardListener)
+  └── gui/overlay_window.py (OverlayWindow)
+
+
+DEVELOPMENT WORKFLOW:
+=====================
+
+1. Modify configuration → Test changes
+2. Edit source code → Run application
+3. Add new features → Update tests
+4. Update documentation → Commit changes
+
+
+For more information, see:
+- docs/QUICKSTART.md for usage
+- docs/DEVELOPMENT.md for development
+- docs/PROJECT_STRUCTURE.md for architecture
