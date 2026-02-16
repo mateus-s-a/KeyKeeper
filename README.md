@@ -1,6 +1,6 @@
-# Keyboard Overlay Application
+# KeyKeeper (Keyboard Overlay Application)
 
-A highly customizable keyboard overlay application for Linux Ubuntu, designed to display keypresses in real-time on screen. Perfect for rhythm game players, streamers, and anyone who wants to visualize their keyboard input.
+A highly customizable keyboard overlay application, designed to display keypresses in real-time on screen. Perfect for rhythm game players, streamers, and anyone who wants to visualize their keyboard input.
 
 ## Features
 
@@ -9,7 +9,6 @@ A highly customizable keyboard overlay application for Linux Ubuntu, designed to
 - **Transparent Overlay**: Always-on-top window that doesn't interfere with your applications
 - **Statistics Tracking** (Future): Keys per second (KPS), key press counts, and more
 - **Theme Support**: Customize colors, fonts, and visual styles
-- **Linux Ubuntu Optimized**: Built specifically for Linux environments
 
 ## Project Structure
 
@@ -32,7 +31,6 @@ keyboard-overlay/
 ## Requirements
 
 - Python 3.8+
-- Linux Ubuntu (or other Linux distributions)
 - Required Python packages (see `requirements.txt`)
 
 ## Installation
@@ -85,7 +83,3 @@ This project is structured for easy expansion and maintenance:
 ## License
 
 [To be determined]
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit pull requests or open issues.
