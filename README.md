@@ -8,7 +8,9 @@ A highly customizable keyboard overlay application, designed to display keypress
 - **Highly Customizable**: Configure which keys to monitor and display
 - **Transparent Overlay**: Always-on-top window that doesn't interfere with your applications
 - **Statistics Tracking**: ✅ Keys per second (KPS), key press counts, peak KPS, and session statistics
-- **Theme Support**: Customize colors, fonts, and visual styles
+- **Key Press Animations**: ✅ Visual feedback with multiple animation types (pulse, scale, glow, fade)
+- **GUI Settings Window**: ✅ Comprehensive settings interface with live preview
+- **Theme Support**: ✅ Full theme management with import/export capabilities
 
 ## Project Structure
 
@@ -76,11 +78,14 @@ This project is structured for easy expansion and maintenance:
 - [x] Keys per second (KPS) display
 - [x] Key press counter
 - [x] Statistics module with peak tracking
+- [x] Key press animations
+- [x] GUI settings window
+- [x] Theme selector and manager
 - [ ] Heat map visualization
 - [ ] Profile system for different applications
-- [ ] GUI configuration tool
 - [ ] Recording and replay functionality
 - [ ] Export statistics to CSV
+- [ ] Custom animation editor
 
 ## License
 

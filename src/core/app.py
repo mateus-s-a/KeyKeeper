@@ -37,7 +37,7 @@ class KeyboardOverlayApp:
         self.root.withdraw()  # Hide the root window
         
         # Create overlay window
-        self.overlay = OverlayWindow(self.root, self.config, self.statistics)
+        self.overlay = OverlayWindow(self.root, self.config, self.statistics, self.config_manager)
         
         # Initialize keyboard listener
         self.keyboard_listener = KeyboardListener(

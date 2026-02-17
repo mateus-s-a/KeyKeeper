@@ -4,7 +4,8 @@ Creates and manages the transparent overlay window for displaying key states.
 """
 
 import tkinter as tk
-from tkinter import font as tkfont
+from tkinter import font as tkfont, Menu
+from gui.animations import AnimationController
 
 
 class OverlayWindow:
@@ -14,7 +15,7 @@ class OverlayWindow:
     Optionally displays statistics like KPS and press counts.
     """
     
-    def __init__(self, parent, config, statistics=None):
+    def __init__(self, parent, config, statistics=None, config_manager=None):
         """
         Initialize the overlay window.
         
@@ -22,14 +23,24 @@ class OverlayWindow:
             parent: Parent Tk root window
             config: Configuration dictionary
             statistics: Optional StatisticsTracker instance
+            config_manager: Optional ConfigManager instance
         """
         self.config = config
         self.parent = parent
         self.statistics = statistics
+        self.config_manager = config_manager
+        
+        # Animation controller
+        self.animation_controller = AnimationController()
+        self.animations_enabled = config.get('animations', {}).get('enabled', True)
+        self.animation_type = config.get('animations', {}).get('type', 'pulse')
         
         # Create toplevel window
         self.window = tk.Toplevel(parent)
         self.window.title("KeyKeeper Overlay")
+        
+        # Create context menu
+        self._create_context_menu()
         
         # Configure window properties
         self._setup_window()
@@ -49,6 +60,106 @@ class OverlayWindow:
         
         # Bind close event
         self.window.protocol("WM_DELETE_WINDOW", self._on_close)
+    
+    def _create_context_menu(self):
+        """Create right-click context menu."""
+        self.context_menu = Menu(self.window, tearoff=0)
+        self.context_menu.add_command(label="Settings", command=self._open_settings)
+        self.context_menu.add_separator()
+        
+        # Animation submenu
+        animation_menu = Menu(self.context_menu, tearoff=0)
+        animation_menu.add_checkbutton(
+            label="Enable Animations",
+            command=self._toggle_animations
+        )
+        animation_menu.add_separator()
+        animation_menu.add_radiobutton(label="Pulse", command=lambda: self._set_animation('pulse'))
+        animation_menu.add_radiobutton(label="Scale", command=lambda: self._set_animation('scale'))
+        animation_menu.add_radiobutton(label="Glow", command=lambda: self._set_animation('glow'))
+        animation_menu.add_radiobutton(label="Fade", command=lambda: self._set_animation('fade'))
+        self.context_menu.add_cascade(label="Animations", menu=animation_menu)
+        
+        self.context_menu.add_separator()
+        self.context_menu.add_command(label="Reset Statistics", command=self._reset_stats)
+        self.context_menu.add_command(label="Exit", command=self._on_close)
+        
+        # Bind right-click
+        self.window.bind("<Button-3>", self._show_context_menu)
+    
+    def _show_context_menu(self, event):
+        """Show context menu."""
+        try:
+            self.context_menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            self.context_menu.grab_release()
+    
+    def _open_settings(self):
+        """Open settings window."""
+        from gui.settings_window import SettingsWindow
+        settings = SettingsWindow(
+            self.parent,
+            self.config,
+            self.config_manager,
+            update_callback=self.apply_config_changes
+        )
+        settings.show()
+    
+    def _toggle_animations(self):
+        """Toggle animations on/off."""
+        self.animations_enabled = not self.animations_enabled
+    
+    def _set_animation(self, animation_type):
+        """Set animation type."""
+        self.animation_type = animation_type
+    
+    def _reset_stats(self):
+        """Reset statistics."""
+        if self.statistics:
+            self.statistics.reset_statistics()
+    
+    def apply_config_changes(self, new_config):
+        """
+        Apply configuration changes from settings window.
+        
+        Args:
+            new_config: New configuration dictionary
+        """
+        self.config = new_config
+        # Recreate UI with new config
+        # For now, just update what we can without recreating
+        self._update_from_config()
+    
+    def _update_from_config(self):
+        """Update window from current config."""
+        # Update appearance
+        appearance = self.config.get('appearance', {})
+        
+        # Update background
+        bg_color = appearance.get('background_color', '#1a1a1a')
+        self.window.configure(bg=bg_color)
+        if hasattr(self, 'main_frame'):
+            self.main_frame.configure(bg=bg_color)
+            self.keys_frame.configure(bg=bg_color)
+        
+        # Update key widgets
+        for key, widget in self.key_widgets.items():
+            widget['label'].configure(
+                font=(
+                    appearance.get('font_family', 'Arial'),
+                    appearance.get('font_size', 24),
+                    'bold'
+                )
+            )
+        
+        # Update window properties
+        overlay_config = self.config.get('overlay', {})
+        if overlay_config.get('always_on_top'):
+            self.window.attributes('-topmost', True)
+        else:
+            self.window.attributes('-topmost', False)
+        
+        self.window.attributes('-alpha', overlay_config.get('opacity', 0.9))
         
     def _setup_window(self):
         """Configure window properties (transparency, always on top, etc.)"""
@@ -311,6 +422,15 @@ class OverlayWindow:
             widget['frame'].configure(bg=color)
             widget['label'].configure(bg=color)
             widget['pressed'] = True
+            
+            # Trigger animation if enabled
+            if self.animations_enabled:
+                self.animation_controller.animate_key_press(
+                    key,
+                    widget,
+                    animation_type=self.animation_type,
+                    duration=0.3
+                )
         else:
             # Key is released - return to normal
             color = appearance.get('inactive_key_color', '#333333')

@@ -38,6 +38,11 @@ class ConfigManager:
             "border_width": 2,
             "border_color": "#666666"
         },
+        "animations": {
+            "enabled": True,
+            "type": "pulse",
+            "duration": 0.3
+        },
         "statistics": {
             "enabled": True,
             "show_kps": True,
