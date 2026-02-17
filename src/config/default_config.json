@@ -36,6 +36,7 @@
         "enabled": true,
         "show_kps": true,
         "show_press_count": true,
+        "show_per_key_kps": true,
         "kps_update_interval": 0.1
     }
 }

@@ -7,24 +7,28 @@ A highly customizable keyboard overlay application, designed to display keypress
 - **Real-time Key Display**: Shows keypresses as they happen
 - **Highly Customizable**: Configure which keys to monitor and display
 - **Transparent Overlay**: Always-on-top window that doesn't interfere with your applications
-- **Statistics Tracking**: ✅ Keys per second (KPS), key press counts, peak KPS, and session statistics
+- **Statistics Tracking**: ✅ Keys per second (KPS), key press counts, peak KPS, per-key KPS, and session statistics
 - **Key Press Animations**: ✅ Visual feedback with multiple animation types (pulse, scale, glow, fade)
 - **GUI Settings Window**: ✅ Comprehensive settings interface with live preview
 - **Theme Support**: ✅ Full theme management with import/export capabilities
+- **Profile Management**: ✅ Create and switch between multiple configuration profiles
+- **Heatmap Visualization**: ✅ Visual representation of key press frequency and distribution
+- **Per-Key Statistics**: ✅ Individual KPS tracking for each monitored key
 
 ## Project Structure
 
 ```
 keyboard-overlay/
 ├── src/
-│   ├── core/           # Core application logic
-│   ├── gui/            # GUI components and overlay window
+│   ├── core/           # Core application logic, statistics, profile manager
+│   ├── gui/            # GUI components, overlay, settings, heatmap
 │   ├── input/          # Keyboard input handling
 │   ├── config/         # Configuration management
-│   └── utils/          # Utility functions and helpers
+│   └── utils/          # Utility functions, theme manager
 ├── assets/
 │   ├── fonts/          # Custom fonts
 │   └── themes/         # Theme configurations
+├── profiles/           # Saved configuration profiles
 ├── tests/              # Unit and integration tests
 ├── docs/               # Additional documentation
 └── main.py             # Application entry point
@@ -62,7 +66,14 @@ Edit `config/default_config.json` to customize:
 1. Run the application: `python main.py`
 2. The overlay will appear on your screen
 3. Press the configured keys to see them displayed
-4. Use the configuration file or GUI settings to customize
+4. Right-click the overlay for quick access to:
+   - **Settings**: Configure appearance, keys, animations, statistics
+   - **Profile Manager**: Create and switch between different profiles
+   - **Heatmap Viewer**: Visualize key press frequency and distribution
+   - **Animations**: Toggle and select animation types
+   - **Reset Statistics**: Clear current session data
+5. Each key displays its individual KPS underneath the key label
+6. Use the configuration file or GUI settings for advanced customization
 
 ## Development
 
@@ -81,11 +92,14 @@ This project is structured for easy expansion and maintenance:
 - [x] Key press animations
 - [x] GUI settings window
 - [x] Theme selector and manager
-- [ ] Heat map visualization
-- [ ] Profile system for different applications
-- [ ] Recording and replay functionality
+- [x] Per-key KPS tracking
+- [x] Profile system for different applications
+- [x] Heatmap visualization
+- [ ] Profile auto-switching based on active application
 - [ ] Export statistics to CSV
 - [ ] Custom animation editor
+- [ ] Cloud profile sync
+- [ ] Keyboard layout heatmap view
 
 ## License
 

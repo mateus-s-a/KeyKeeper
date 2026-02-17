@@ -8,6 +8,7 @@ from config.config_manager import ConfigManager
 from input.keyboard_listener import KeyboardListener
 from gui.overlay_window import OverlayWindow
 from core.statistics import StatisticsTracker
+from core.profile_manager import ProfileManager
 
 
 class KeyboardOverlayApp:
@@ -24,6 +25,18 @@ class KeyboardOverlayApp:
         self.config_manager = ConfigManager()
         self.config = self.config_manager.load_config()
         
+        # Initialize profile manager
+        self.profile_manager = ProfileManager()
+        print(f"Profile Manager initialized - {len(self.profile_manager.list_profiles())} profiles loaded")
+        
+        # Check for active profile
+        active_profile = self.profile_manager.get_active_profile()
+        if active_profile:
+            print(f"Active profile: {active_profile.name}")
+            # Apply active profile config
+            self.config_manager.update(active_profile.config)
+            self.config = self.config_manager.get_all()
+        
         # Initialize statistics tracker if enabled
         stats_config = self.config.get('statistics', {})
         self.statistics = None
@@ -38,6 +51,9 @@ class KeyboardOverlayApp:
         
         # Create overlay window
         self.overlay = OverlayWindow(self.root, self.config, self.statistics, self.config_manager)
+        
+        # Set profile manager in overlay for menu access
+        self.overlay.profile_manager = self.profile_manager
         
         # Initialize keyboard listener
         self.keyboard_listener = KeyboardListener(

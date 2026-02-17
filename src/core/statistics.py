@@ -37,11 +37,18 @@ class StatisticsTracker:
         self.key_press_counts = defaultdict(int)    # Count per key
         self.total_presses = 0                      # Total press count
         
+        # Per-key press timestamps for precise KPS
+        self.per_key_timestamps = defaultdict(lambda: deque(maxlen=1000))
+        
         # KPS tracking
         self.current_kps = 0.0
         self.peak_kps = 0.0
         self.average_kps = 0.0
         self.kps_history = deque(maxlen=history_size)
+        
+        # Per-key KPS tracking
+        self.per_key_kps = defaultdict(float)
+        self.per_key_peak_kps = defaultdict(float)
         
         # Session tracking
         self.session_start_time = time.time()
@@ -65,24 +72,33 @@ class StatisticsTracker:
         with self.lock:
             # Record timestamp
             self.press_timestamps.append(current_time)
+            self.per_key_timestamps[key].append(current_time)
             
             # Update counters
             self.key_press_counts[key] += 1
             self.total_presses += 1
             self.last_press_time = current_time
             
-            # Calculate current KPS
+            # Calculate current KPS (overall)
             self._calculate_kps(current_time)
+            
+            # Calculate per-key KPS
+            self._calculate_per_key_kps(key, current_time)
             
             # Update peak KPS
             if self.current_kps > self.peak_kps:
                 self.peak_kps = self.current_kps
             
+            # Update per-key peak KPS
+            if self.per_key_kps[key] > self.per_key_peak_kps[key]:
+                self.per_key_peak_kps[key] = self.per_key_kps[key]
+            
             # Add to history
             self.kps_history.append({
                 'timestamp': current_time,
                 'kps': self.current_kps,
-                'total_presses': self.total_presses
+                'total_presses': self.total_presses,
+                'per_key_kps': dict(self.per_key_kps)
             })
             
             # Trigger callback if set
@@ -113,6 +129,25 @@ class StatisticsTracker:
             total_kps = sum(entry['kps'] for entry in self.kps_history)
             self.average_kps = total_kps / len(self.kps_history)
     
+    def _calculate_per_key_kps(self, key: str, current_time: float):
+        """
+        Calculate the keys per second for a specific key.
+        
+        Args:
+            key: The key to calculate KPS for
+            current_time: Current timestamp
+        """
+        cutoff_time = current_time - self.kps_window
+        
+        # Count presses for this key within the window
+        presses_in_window = sum(
+            1 for ts in self.per_key_timestamps[key]
+            if ts >= cutoff_time
+        )
+        
+        # Calculate per-key KPS
+        self.per_key_kps[key] = presses_in_window / self.kps_window
+    
     def get_statistics(self) -> Dict:
         """
         Get current statistics snapshot.
@@ -129,6 +164,8 @@ class StatisticsTracker:
                 'average_kps': round(self.average_kps, 2),
                 'total_presses': self.total_presses,
                 'key_press_counts': dict(self.key_press_counts),
+                'per_key_kps': {k: round(v, 2) for k, v in self.per_key_kps.items()},
+                'per_key_peak_kps': {k: round(v, 2) for k, v in self.per_key_peak_kps.items()},
                 'session_duration': round(session_duration, 1),
                 'last_press_time': self.last_press_time
             }
@@ -166,6 +203,32 @@ class StatisticsTracker:
         with self.lock:
             return self.key_press_counts.get(key, 0)
     
+    def get_key_kps(self, key: str) -> float:
+        """
+        Get the current KPS for a specific key.
+        
+        Args:
+            key: The key to check
+            
+        Returns:
+            Current KPS for the key
+        """
+        with self.lock:
+            return round(self.per_key_kps.get(key, 0.0), 2)
+    
+    def get_key_peak_kps(self, key: str) -> float:
+        """
+        Get the peak KPS for a specific key.
+        
+        Args:
+            key: The key to check
+            
+        Returns:
+            Peak KPS for the key
+        """
+        with self.lock:
+            return round(self.per_key_peak_kps.get(key, 0.0), 2)
+    
     def get_top_keys(self, n: int = 5) -> List[tuple]:
         """
         Get the top N most pressed keys.
@@ -198,10 +261,13 @@ class StatisticsTracker:
         with self.lock:
             self.press_timestamps.clear()
             self.key_press_counts.clear()
+            self.per_key_timestamps.clear()
             self.total_presses = 0
             self.current_kps = 0.0
             self.peak_kps = 0.0
             self.average_kps = 0.0
+            self.per_key_kps.clear()
+            self.per_key_peak_kps.clear()
             self.kps_history.clear()
             self.session_start_time = time.time()
             self.last_press_time = None

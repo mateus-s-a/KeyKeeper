@@ -65,6 +65,8 @@ class OverlayWindow:
         """Create right-click context menu."""
         self.context_menu = Menu(self.window, tearoff=0)
         self.context_menu.add_command(label="Settings", command=self._open_settings)
+        self.context_menu.add_command(label="Profile Manager", command=self._open_profile_manager)
+        self.context_menu.add_command(label="Heatmap Viewer", command=self._open_heatmap)
         self.context_menu.add_separator()
         
         # Animation submenu
@@ -86,6 +88,11 @@ class OverlayWindow:
         
         # Bind right-click
         self.window.bind("<Button-3>", self._show_context_menu)
+        
+        # Store references to heatmap and profile manager windows
+        self.heatmap_window = None
+        self.profile_manager_window = None
+        self.profile_manager = None  # Will be set by app
     
     def _show_context_menu(self, event):
         """Show context menu."""
@@ -117,6 +124,41 @@ class OverlayWindow:
         """Reset statistics."""
         if self.statistics:
             self.statistics.reset_statistics()
+    
+    def _open_heatmap(self):
+        """Open heatmap viewer window."""
+        if self.heatmap_window is None or not self.heatmap_window.window.winfo_exists():
+            from gui.heatmap import HeatmapWindow
+            self.heatmap_window = HeatmapWindow(
+                parent=self.window,
+                statistics_tracker=self.statistics
+            )
+        else:
+            self.heatmap_window.show()
+    
+    def _open_profile_manager(self):
+        """Open profile manager window."""
+        if self.profile_manager is None:
+            print("Profile Manager not available")
+            return
+        
+        if self.profile_manager_window is None or not self.profile_manager_window.window.winfo_exists():
+            from gui.profile_manager_window import ProfileManagerWindow
+            self.profile_manager_window = ProfileManagerWindow(
+                parent=self.window,
+                profile_manager=self.profile_manager,
+                config_manager=self.config_manager,
+                on_profile_change=self._on_profile_changed
+            )
+        else:
+            self.profile_manager_window.show()
+    
+    def _on_profile_changed(self, profile):
+        """Handle profile change event."""
+        # Apply new config and recreate UI
+        self.config = profile.config
+        self.apply_config_changes(self.config)
+        print(f"Switched to profile: {profile.name}")
     
     def apply_config_changes(self, new_config):
         """
@@ -236,6 +278,8 @@ class OverlayWindow:
             Dictionary containing the key's widgets
         """
         appearance = self.config.get('appearance', {})
+        stats_config = self.config.get('statistics', {})
+        show_per_key_kps = stats_config.get('show_per_key_kps', True)
         
         # Create frame for the key
         key_frame = tk.Frame(
@@ -262,9 +306,22 @@ class OverlayWindow:
         )
         key_label.pack(padx=5, pady=5)
         
+        # Create per-key KPS label if enabled
+        kps_label = None
+        if self.statistics and show_per_key_kps:
+            kps_label = tk.Label(
+                key_frame,
+                text="0.0 KPS",
+                font=(appearance.get('font_family', 'Arial'), 9),
+                fg=appearance.get('text_color', '#ffffff'),
+                bg=appearance.get('inactive_key_color', '#333333')
+            )
+            kps_label.pack(padx=2, pady=(0, 2))
+        
         return {
             'frame': key_frame,
             'label': key_label,
+            'kps_label': kps_label,
             'pressed': False
         }
     
@@ -399,6 +456,14 @@ class OverlayWindow:
         # Update peak KPS
         if 'peak_label' in self.stats_widgets:
             self.stats_widgets['peak_label'].config(text=f"{stats['peak_kps']:.2f}")
+        
+        # Update per-key KPS
+        per_key_kps = stats.get('per_key_kps', {})
+        for key, widget_data in self.key_widgets.items():
+            kps_label = widget_data.get('kps_label')
+            if kps_label:
+                key_kps = per_key_kps.get(key, 0.0)
+                kps_label.config(text=f"{key_kps:.1f} KPS")
         
     def update_key_state(self, key, pressed):
         """
