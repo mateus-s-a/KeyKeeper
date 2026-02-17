@@ -11,22 +11,25 @@ class OverlayWindow:
     """
     Transparent overlay window that displays keyboard key states.
     Always stays on top and shows which keys are currently pressed.
+    Optionally displays statistics like KPS and press counts.
     """
     
-    def __init__(self, parent, config):
+    def __init__(self, parent, config, statistics=None):
         """
         Initialize the overlay window.
         
         Args:
             parent: Parent Tk root window
             config: Configuration dictionary
+            statistics: Optional StatisticsTracker instance
         """
         self.config = config
         self.parent = parent
+        self.statistics = statistics
         
         # Create toplevel window
         self.window = tk.Toplevel(parent)
-        self.window.title("Keyboard Overlay")
+        self.window.title("KeyKeeper Overlay")
         
         # Configure window properties
         self._setup_window()
@@ -34,8 +37,15 @@ class OverlayWindow:
         # Key display widgets
         self.key_widgets = {}
         
+        # Statistics widgets
+        self.stats_widgets = {}
+        
         # Create the UI
         self._create_ui()
+        
+        # Setup statistics update timer if enabled
+        if self.statistics:
+            self._setup_statistics_update()
         
         # Bind close event
         self.window.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -43,10 +53,18 @@ class OverlayWindow:
     def _setup_window(self):
         """Configure window properties (transparency, always on top, etc.)"""
         overlay_config = self.config.get('overlay', {})
+        stats_config = self.config.get('statistics', {})
         
-        # Set window size
+        # Adjust height if statistics are enabled
         width = overlay_config.get('width', 400)
-        height = overlay_config.get('height', 150)
+        base_height = overlay_config.get('height', 150)
+        
+        # Add extra height for statistics display
+        if self.statistics and (stats_config.get('show_kps') or stats_config.get('show_press_count')):
+            height = base_height + 80  # Extra space for stats
+        else:
+            height = base_height
+        
         pos_x = overlay_config.get('position', {}).get('x', 100)
         pos_y = overlay_config.get('position', {}).get('y', 100)
         
@@ -91,6 +109,10 @@ class OverlayWindow:
         for key in keys_to_monitor:
             key_widget = self._create_key_widget(key)
             self.key_widgets[key.lower()] = key_widget
+        
+        # Create statistics display if enabled
+        if self.statistics:
+            self._create_statistics_ui()
             
     def _create_key_widget(self, key):
         """
@@ -134,6 +156,138 @@ class OverlayWindow:
             'label': key_label,
             'pressed': False
         }
+    
+    def _create_statistics_ui(self):
+        """Create the statistics display UI."""
+        stats_config = self.config.get('statistics', {})
+        appearance = self.config.get('appearance', {})
+        bg_color = appearance.get('background_color', '#1a1a1a')
+        text_color = appearance.get('text_color', '#ffffff')
+        
+        # Create statistics frame
+        self.stats_frame = tk.Frame(
+            self.main_frame,
+            bg=bg_color
+        )
+        self.stats_frame.pack(side='bottom', fill='x', pady=(10, 0))
+        
+        # Create separator line
+        separator = tk.Frame(
+            self.stats_frame,
+            bg=appearance.get('border_color', '#666666'),
+            height=2
+        )
+        separator.pack(fill='x', pady=(0, 10))
+        
+        # Create stats display frame
+        stats_display = tk.Frame(self.stats_frame, bg=bg_color)
+        stats_display.pack()
+        
+        # KPS display
+        if stats_config.get('show_kps', False):
+            kps_frame = tk.Frame(stats_display, bg=bg_color)
+            kps_frame.pack(side='left', padx=20)
+            
+            kps_label = tk.Label(
+                kps_frame,
+                text="KPS:",
+                font=('Arial', 10, 'bold'),
+                fg=text_color,
+                bg=bg_color
+            )
+            kps_label.pack(side='left', padx=(0, 5))
+            
+            kps_value = tk.Label(
+                kps_frame,
+                text="0.00",
+                font=('Arial', 12, 'bold'),
+                fg=appearance.get('active_key_color', '#00ff00'),
+                bg=bg_color
+            )
+            kps_value.pack(side='left')
+            
+            self.stats_widgets['kps_label'] = kps_value
+        
+        # Press count display
+        if stats_config.get('show_press_count', False):
+            count_frame = tk.Frame(stats_display, bg=bg_color)
+            count_frame.pack(side='left', padx=20)
+            
+            count_label = tk.Label(
+                count_frame,
+                text="Total:",
+                font=('Arial', 10, 'bold'),
+                fg=text_color,
+                bg=bg_color
+            )
+            count_label.pack(side='left', padx=(0, 5))
+            
+            count_value = tk.Label(
+                count_frame,
+                text="0",
+                font=('Arial', 12, 'bold'),
+                fg=appearance.get('active_key_color', '#00ff00'),
+                bg=bg_color
+            )
+            count_value.pack(side='left')
+            
+            self.stats_widgets['count_label'] = count_value
+        
+        # Peak KPS display
+        if stats_config.get('show_kps', False):
+            peak_frame = tk.Frame(stats_display, bg=bg_color)
+            peak_frame.pack(side='left', padx=20)
+            
+            peak_label = tk.Label(
+                peak_frame,
+                text="Peak:",
+                font=('Arial', 10, 'bold'),
+                fg=text_color,
+                bg=bg_color
+            )
+            peak_label.pack(side='left', padx=(0, 5))
+            
+            peak_value = tk.Label(
+                peak_frame,
+                text="0.00",
+                font=('Arial', 12, 'bold'),
+                fg=appearance.get('active_key_color', '#00ff00'),
+                bg=bg_color
+            )
+            peak_value.pack(side='left')
+            
+            self.stats_widgets['peak_label'] = peak_value
+    
+    def _setup_statistics_update(self):
+        """Setup periodic statistics updates."""
+        update_interval = int(self.config.get('statistics', {}).get('kps_update_interval', 1.0) * 100)  # Convert to ms
+        self._update_statistics()
+        self.window.after(update_interval, self._periodic_statistics_update)
+    
+    def _periodic_statistics_update(self):
+        """Periodically update statistics display."""
+        self._update_statistics()
+        update_interval = int(self.config.get('statistics', {}).get('kps_update_interval', 1.0) * 100)
+        self.window.after(update_interval, self._periodic_statistics_update)
+    
+    def _update_statistics(self):
+        """Update statistics display with current values."""
+        if not self.statistics:
+            return
+        
+        stats = self.statistics.get_statistics()
+        
+        # Update KPS
+        if 'kps_label' in self.stats_widgets:
+            self.stats_widgets['kps_label'].config(text=f"{stats['current_kps']:.2f}")
+        
+        # Update total count
+        if 'count_label' in self.stats_widgets:
+            self.stats_widgets['count_label'].config(text=str(stats['total_presses']))
+        
+        # Update peak KPS
+        if 'peak_label' in self.stats_widgets:
+            self.stats_widgets['peak_label'].config(text=f"{stats['peak_kps']:.2f}")
         
     def update_key_state(self, key, pressed):
         """

@@ -28,9 +28,9 @@
         "border_color": "#666666"
     },
     "statistics": {
-        "enabled": false,
-        "show_kps": false,
-        "show_press_count": false,
-        "kps_update_interval": 1.0
+        "enabled": true,
+        "show_kps": true,
+        "show_press_count": true,
+        "kps_update_interval": 0.1
     }
 }

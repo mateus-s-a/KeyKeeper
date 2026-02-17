@@ -39,10 +39,10 @@ class ConfigManager:
             "border_color": "#666666"
         },
         "statistics": {
-            "enabled": False,
-            "show_kps": False,
-            "show_press_count": False,
-            "kps_update_interval": 1.0
+            "enabled": True,
+            "show_kps": True,
+            "show_press_count": True,
+            "kps_update_interval": 0.1
         }
     }
     
