@@ -1,6 +1,10 @@
 """
 Keyboard Listener Module
-Handles keyboard input detection using pynput library.
+Handles global keyboard input detection using pynput library.
+
+Note: This listener uses pynput.keyboard.Listener which provides
+GLOBAL keyboard monitoring - it works even when the application 
+window is not focused or selected by the user.
 """
 
 from pynput import keyboard
@@ -9,8 +13,9 @@ import threading
 
 class KeyboardListener:
     """
-    Listens for keyboard events and triggers callbacks.
-    Monitors specific keys and reports their press/release state.
+    Global keyboard event listener that monitors system-wide keyboard input.
+    Works regardless of window focus state - detects keypresses even when
+    the application is minimized or another window is active.
     """
     
     def __init__(self, keys_to_monitor, callback):

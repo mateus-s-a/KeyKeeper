@@ -1,0 +1,15 @@
+{
+    "theme_name": "Ocean Breeze",
+    "description": "Calming blue ocean-inspired theme with gradient blues",
+    "appearance": {
+        "background_color": "#0d1b2a",
+        "active_key_color": "#00d9ff",
+        "inactive_key_color": "#1b3a4b",
+        "text_color": "#e0f7fa",
+        "font_family": "Arial",
+        "font_size": 24,
+        "key_padding": 12,
+        "border_width": 2,
+        "border_color": "#0096c7"
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "theme_name": "Forest Night",
+    "description": "Deep forest green theme with nature-inspired colors",
+    "appearance": {
+        "background_color": "#0f1a0f",
+        "active_key_color": "#4caf50",
+        "inactive_key_color": "#1b2e1b",
+        "text_color": "#c8e6c9",
+        "font_family": "Arial",
+        "font_size": 24,
+        "key_padding": 10,
+        "border_width": 2,
+        "border_color": "#66bb6a"
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "theme_name": "Sunset Glow",
+    "description": "Warm sunset colors with orange and pink gradients",
+    "appearance": {
+        "background_color": "#1a0f0a",
+        "active_key_color": "#ff6b35",
+        "inactive_key_color": "#3d2314",
+        "text_color": "#ffe5d9",
+        "font_family": "Arial",
+        "font_size": 26,
+        "key_padding": 14,
+        "border_width": 3,
+        "border_color": "#ff8c42"
+    }
+}

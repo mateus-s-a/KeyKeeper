@@ -190,6 +190,19 @@ class SettingsWindow:
         )
         self.border_width.set(appearance.get('border_width', 2))
         self.border_width.grid(row=row, column=1, sticky='w', padx=5)
+        
+        # Blur Intensity
+        row += 1
+        ttk.Label(frame, text="Blur Intensity:").grid(row=row, column=0, sticky='w', pady=5)
+        self.blur_intensity = tk.Scale(
+            frame,
+            from_=0,
+            to=10,
+            orient='horizontal',
+            command=lambda v: self._update_live_preview()
+        )
+        self.blur_intensity.set(appearance.get('blur_intensity', 0))
+        self.blur_intensity.grid(row=row, column=1, sticky='w', padx=5)
     
     def _create_keys_tab(self):
         """Create keys configuration tab."""
@@ -287,6 +300,15 @@ class SettingsWindow:
             frame,
             text="Always on Top",
             variable=self.always_on_top,
+            command=self._update_live_preview
+        ).pack(anchor='w', pady=5)
+        
+        # Borderless Mode (hide title bar)
+        self.borderless = tk.BooleanVar(value=overlay.get('borderless', False))
+        ttk.Checkbutton(
+            frame,
+            text="Borderless Mode (Hide Title Bar)",
+            variable=self.borderless,
             command=self._update_live_preview
         ).pack(anchor='w', pady=5)
         
@@ -482,6 +504,7 @@ class SettingsWindow:
         self.config['appearance']['font_size'] = int(self.font_size.get())
         self.config['appearance']['key_padding'] = int(self.key_padding.get())
         self.config['appearance']['border_width'] = int(self.border_width.get())
+        self.config['appearance']['blur_intensity'] = int(self.blur_intensity.get())
         
         # Keys
         keys_text = self.keys_entry.get('1.0', 'end-1c')
@@ -494,6 +517,7 @@ class SettingsWindow:
         self.config['overlay']['position']['x'] = int(self.pos_x.get())
         self.config['overlay']['position']['y'] = int(self.pos_y.get())
         self.config['overlay']['always_on_top'] = self.always_on_top.get()
+        self.config['overlay']['borderless'] = self.borderless.get()
         self.config['overlay']['transparent'] = self.transparent.get()
         self.config['overlay']['opacity'] = self.opacity.get()
         

@@ -62,7 +62,7 @@ class OverlayWindow:
         self.window.protocol("WM_DELETE_WINDOW", self._on_close)
     
     def _create_context_menu(self):
-        """Create right-click context menu."""
+        """Create settings button and menu."""
         self.context_menu = Menu(self.window, tearoff=0)
         self.context_menu.add_command(label="Settings", command=self._open_settings)
         self.context_menu.add_command(label="Profile Manager", command=self._open_profile_manager)
@@ -86,13 +86,13 @@ class OverlayWindow:
         self.context_menu.add_command(label="Reset Statistics", command=self._reset_stats)
         self.context_menu.add_command(label="Exit", command=self._on_close)
         
-        # Bind right-click
-        self.window.bind("<Button-3>", self._show_context_menu)
-        
         # Store references to heatmap and profile manager windows
         self.heatmap_window = None
         self.profile_manager_window = None
         self.profile_manager = None  # Will be set by app
+        
+        # Settings icon will be created in _create_ui
+        self.settings_button = None
     
     def _show_context_menu(self, event):
         """Show context menu."""
@@ -242,9 +242,19 @@ class OverlayWindow:
                 if hasattr(widget, 'configure'):
                     widget.configure(fg=text_color, bg=bg_color)
         
+        # Update settings button color
+        if hasattr(self, 'settings_button') and self.settings_button:
+            self.settings_button.configure(fg=text_color, bg=bg_color)
+        
         # Update window properties
         self.window.attributes('-topmost', overlay_config.get('always_on_top', True))
         self.window.attributes('-alpha', overlay_config.get('opacity', 0.9))
+        
+        # Update borderless mode
+        if overlay_config.get('borderless', False):
+            self.window.overrideredirect(True)
+        else:
+            self.window.overrideredirect(False)
         
         # Update window size and position
         self._update_window_geometry()
@@ -321,8 +331,11 @@ class OverlayWindow:
             opacity = overlay_config.get('opacity', 0.9)
             self.window.attributes('-alpha', opacity)
             
-        # Remove window decorations (optional)
-        # self.window.overrideredirect(True)
+        # Borderless mode (hide title bar)
+        if overlay_config.get('borderless', False):
+            self.window.overrideredirect(True)
+        else:
+            self.window.overrideredirect(False)
         
         # Set background color
         bg_color = self.config.get('appearance', {}).get('background_color', '#1a1a1a')
@@ -339,6 +352,19 @@ class OverlayWindow:
             bg=appearance.get('background_color', '#1a1a1a')
         )
         self.main_frame.pack(expand=True, fill='both', padx=10, pady=10)
+        
+        # Create settings icon button at top-right
+        text_color = appearance.get('text_color', '#ffffff')
+        self.settings_button = tk.Label(
+            self.main_frame,
+            text="⚙",  # Settings gear icon
+            font=('Arial', 20, 'bold'),
+            fg=text_color,
+            bg=appearance.get('background_color', '#1a1a1a'),
+            cursor="hand2"
+        )
+        self.settings_button.place(relx=1.0, rely=0.0, anchor='ne')
+        self.settings_button.bind('<Button-1>', lambda e: self._show_context_menu(e))
         
         # Create key display frame
         self.keys_frame = tk.Frame(

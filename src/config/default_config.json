@@ -13,6 +13,7 @@
             "y": 100
         },
         "always_on_top": true,
+        "borderless": false,
         "transparent": true,
         "opacity": 0.9
     },
@@ -25,7 +26,8 @@
         "font_size": 24,
         "key_padding": 10,
         "border_width": 2,
-        "border_color": "#666666"
+        "border_color": "#666666",
+        "blur_intensity": 0
     },
     "animations": {
         "enabled": true,
