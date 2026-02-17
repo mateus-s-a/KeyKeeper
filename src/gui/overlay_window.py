@@ -167,41 +167,124 @@ class OverlayWindow:
         Args:
             new_config: New configuration dictionary
         """
+        old_keys = self.config.get('keys_to_monitor', [])
+        new_keys = new_config.get('keys_to_monitor', [])
+        
         self.config = new_config
-        # Recreate UI with new config
-        # For now, just update what we can without recreating
-        self._update_from_config()
+        
+        # Check if keys changed - need to rebuild UI
+        if set(old_keys) != set(new_keys):
+            self._rebuild_ui()
+        else:
+            # Just update existing UI properties
+            self._update_from_config()
     
     def _update_from_config(self):
-        """Update window from current config."""
-        # Update appearance
+        """Update window from current config without rebuilding."""
         appearance = self.config.get('appearance', {})
+        overlay_config = self.config.get('overlay', {})
         
-        # Update background
+        # Update background colors
         bg_color = appearance.get('background_color', '#1a1a1a')
+        inactive_color = appearance.get('inactive_key_color', '#333333')
+        active_color = appearance.get('active_key_color', '#00ff00')
+        text_color = appearance.get('text_color', '#ffffff')
+        border_color = appearance.get('border_color', '#666666')
+        border_width = appearance.get('border_width', 2)
+        
         self.window.configure(bg=bg_color)
         if hasattr(self, 'main_frame'):
             self.main_frame.configure(bg=bg_color)
             self.keys_frame.configure(bg=bg_color)
         
-        # Update key widgets
+        # Update all key widgets
         for key, widget in self.key_widgets.items():
+            current_bg = inactive_color if not widget.get('pressed', False) else active_color
+            
+            # Update frame
+            widget['frame'].configure(
+                bg=current_bg,
+                highlightbackground=border_color,
+                highlightthickness=border_width
+            )
+            
+            # Update label
             widget['label'].configure(
                 font=(
                     appearance.get('font_family', 'Arial'),
                     appearance.get('font_size', 24),
                     'bold'
-                )
+                ),
+                fg=text_color,
+                bg=current_bg
             )
+            
+            # Update per-key KPS label if exists
+            if widget.get('kps_label'):
+                widget['kps_label'].configure(
+                    font=(appearance.get('font_family', 'Arial'), 9),
+                    fg=text_color,
+                    bg=current_bg
+                )
+        
+        # Update statistics widgets if they exist
+        if hasattr(self, 'stats_frame'):
+            self.stats_frame.configure(bg=bg_color)
+        
+        if hasattr(self, 'stats_widgets'):
+            for widget_name, widget in self.stats_widgets.items():
+                if hasattr(widget, 'configure'):
+                    widget.configure(fg=text_color, bg=bg_color)
         
         # Update window properties
-        overlay_config = self.config.get('overlay', {})
-        if overlay_config.get('always_on_top'):
-            self.window.attributes('-topmost', True)
-        else:
-            self.window.attributes('-topmost', False)
-        
+        self.window.attributes('-topmost', overlay_config.get('always_on_top', True))
         self.window.attributes('-alpha', overlay_config.get('opacity', 0.9))
+        
+        # Update window size and position
+        self._update_window_geometry()
+        
+        # Update animation settings
+        animations = self.config.get('animations', {})
+        self.animations_enabled = animations.get('enabled', True)
+        self.animation_type = animations.get('type', 'pulse')
+    
+    def _update_window_geometry(self):
+        """Update window size and position."""
+        overlay_config = self.config.get('overlay', {})
+        stats_config = self.config.get('statistics', {})
+        
+        width = overlay_config.get('width', 400)
+        base_height = overlay_config.get('height', 150)
+        
+        # Add extra height for statistics display
+        if self.statistics and (stats_config.get('show_kps') or stats_config.get('show_press_count')):
+            height = base_height + 80
+        else:
+            height = base_height
+        
+        pos_x = overlay_config.get('position', {}).get('x', 100)
+        pos_y = overlay_config.get('position', {}).get('y', 100)
+        
+        self.window.geometry(f"{width}x{height}+{pos_x}+{pos_y}")
+    
+    def _rebuild_ui(self):
+        """Completely rebuild the UI with new configuration."""
+        # Destroy existing UI
+        if hasattr(self, 'main_frame'):
+            self.main_frame.destroy()
+        
+        # Clear widget references
+        self.key_widgets.clear()
+        self.stats_widgets.clear()
+        
+        # Recreate UI
+        self._create_ui()
+        
+        # Update statistics display if needed
+        if self.statistics:
+            self._setup_statistics_update()
+        
+        print("UI rebuilt with new configuration")
         
     def _setup_window(self):
         """Configure window properties (transparency, always on top, etc.)"""

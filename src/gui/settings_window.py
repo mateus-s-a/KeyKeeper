@@ -31,6 +31,9 @@ class SettingsWindow:
         self.update_callback = update_callback
         self.theme_manager = ThemeManager()
         
+        # Preview timer to debounce rapid changes
+        self.preview_timer = None
+        
         # Create window
         self.window = tk.Toplevel(parent)
         self.window.title("KeyKeeper Settings")
@@ -242,11 +245,17 @@ class SettingsWindow:
         self.window_width = ttk.Spinbox(size_frame, from_=200, to=1000, width=10)
         self.window_width.set(overlay.get('width', 400))
         self.window_width.pack(side='left', padx=5)
+        self.window_width.bind('<KeyRelease>', lambda e: self._schedule_live_preview())
+        self.window_width.bind('<<Increment>>', lambda e: self._schedule_live_preview())
+        self.window_width.bind('<<Decrement>>', lambda e: self._schedule_live_preview())
         
         ttk.Label(size_frame, text="Height:").pack(side='left', padx=5)
         self.window_height = ttk.Spinbox(size_frame, from_=100, to=500, width=10)
         self.window_height.set(overlay.get('height', 150))
         self.window_height.pack(side='left', padx=5)
+        self.window_height.bind('<KeyRelease>', lambda e: self._schedule_live_preview())
+        self.window_height.bind('<<Increment>>', lambda e: self._schedule_live_preview())
+        self.window_height.bind('<<Decrement>>', lambda e: self._schedule_live_preview())
         
         # Window Position
         ttk.Label(frame, text="Window Position:", font=('Arial', 12, 'bold')).pack(anchor='w', pady=(20, 5))
@@ -260,18 +269,25 @@ class SettingsWindow:
         self.pos_x = ttk.Spinbox(pos_frame, from_=0, to=3000, width=10)
         self.pos_x.set(position.get('x', 100))
         self.pos_x.pack(side='left', padx=5)
+        self.pos_x.bind('<KeyRelease>', lambda e: self._schedule_live_preview())
+        self.pos_x.bind('<<Increment>>', lambda e: self._schedule_live_preview())
+        self.pos_x.bind('<<Decrement>>', lambda e: self._schedule_live_preview())
         
         ttk.Label(pos_frame, text="Y:").pack(side='left', padx=5)
         self.pos_y = ttk.Spinbox(pos_frame, from_=0, to=2000, width=10)
         self.pos_y.set(position.get('y', 100))
         self.pos_y.pack(side='left', padx=5)
+        self.pos_y.bind('<KeyRelease>', lambda e: self._schedule_live_preview())
+        self.pos_y.bind('<<Increment>>', lambda e: self._schedule_live_preview())
+        self.pos_y.bind('<<Decrement>>', lambda e: self._schedule_live_preview())
         
         # Always on top
         self.always_on_top = tk.BooleanVar(value=overlay.get('always_on_top', True))
         ttk.Checkbutton(
             frame,
             text="Always on Top",
-            variable=self.always_on_top
+            variable=self.always_on_top,
+            command=self._update_live_preview
         ).pack(anchor='w', pady=5)
         
         # Transparency
@@ -279,7 +295,8 @@ class SettingsWindow:
         ttk.Checkbutton(
             frame,
             text="Transparent Background",
-            variable=self.transparent
+            variable=self.transparent,
+            command=self._update_live_preview
         ).pack(anchor='w', pady=5)
         
         # Opacity
@@ -289,7 +306,8 @@ class SettingsWindow:
             from_=0.1,
             to=1.0,
             resolution=0.1,
-            orient='horizontal'
+            orient='horizontal',
+            command=lambda v: self._update_live_preview()
         )
         self.opacity.set(overlay.get('opacity', 0.9))
         self.opacity.pack(fill='x', padx=5)
@@ -440,6 +458,15 @@ class SettingsWindow:
             self.config['appearance'][config_key] = color[1]
             self._update_live_preview()
     
+    def _schedule_live_preview(self):
+        """Schedule a live preview update with debouncing."""
+        # Cancel existing timer if any
+        if self.preview_timer:
+            self.window.after_cancel(self.preview_timer)
+        
+        # Schedule new update after 300ms
+        self.preview_timer = self.window.after(300, self._update_live_preview)
+    
     def _update_live_preview(self):
         """Update live preview (if callback provided)."""
         if self.update_callback:
@@ -575,28 +602,43 @@ class SettingsWindow:
     
     def _apply_settings(self):
         """Apply settings without saving."""
-        self._extract_settings()
-        
-        if self.update_callback:
-            self.update_callback(self.config)
-        
-        messagebox.showinfo("Settings Applied", "Settings applied successfully!")
+        try:
+            self._extract_settings()
+            
+            if self.update_callback:
+                self.update_callback(self.config)
+            
+            messagebox.showinfo("Settings Applied", "Settings applied successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to apply settings: {str(e)}")
     
     def _save_settings(self):
         """Save settings to config file."""
-        self._extract_settings()
-        self.config_manager.save_config(self.config)
-        messagebox.showinfo("Settings Saved", "Settings saved successfully!")
+        try:
+            self._extract_settings()
+            
+            # Save using config manager
+            self.config_manager.save_config(self.config)
+            
+            messagebox.showinfo("Settings Saved", "Settings saved successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save settings: {str(e)}")
     
     def _apply_and_save(self):
         """Apply and save settings."""
-        self._extract_settings()
-        
-        if self.update_callback:
-            self.update_callback(self.config)
-        
-        self.config_manager.save_config(self.config)
-        messagebox.showinfo("Success", "Settings applied and saved!")
+        try:
+            self._extract_settings()
+            
+            # Apply to live overlay
+            if self.update_callback:
+                self.update_callback(self.config)
+            
+            # Save to file
+            self.config_manager.save_config(self.config)
+            
+            messagebox.showinfo("Success", "Settings applied and saved!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to apply and save settings: {str(e)}")
     
     def _reset_defaults(self):
         """Reset to default settings."""
