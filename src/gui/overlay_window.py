@@ -169,12 +169,18 @@ class OverlayWindow:
         """
         old_keys = self.config.get('keys_to_monitor', [])
         new_keys = new_config.get('keys_to_monitor', [])
+        old_stats_enabled = self.config.get('statistics', {}).get('enabled', False)
+        new_stats_enabled = new_config.get('statistics', {}).get('enabled', False)
         
         self.config = new_config
         
-        # Check if keys changed - need to rebuild UI
-        if set(old_keys) != set(new_keys):
+        # Check if keys changed or statistics enabled/disabled - need to rebuild UI
+        if set(old_keys) != set(new_keys) or old_stats_enabled != new_stats_enabled:
             self._rebuild_ui()
+            # Update keyboard listener if keys changed
+            if set(old_keys) != set(new_keys):
+                if hasattr(self, 'app') and self.app:
+                    self.app.update_keyboard_listener(new_keys)
         else:
             # Just update existing UI properties
             self._update_from_config()
@@ -564,11 +570,21 @@ class OverlayWindow:
         widget = self.key_widgets[key]
         appearance = self.config.get('appearance', {})
         
+        # Get border properties
+        border_color = appearance.get('border_color', '#666666')
+        border_width = appearance.get('border_width', 2)
+        
         if pressed:
             # Key is pressed - highlight it
             color = appearance.get('active_key_color', '#00ff00')
-            widget['frame'].configure(bg=color)
+            widget['frame'].configure(
+                bg=color,
+                highlightbackground=border_color,
+                highlightthickness=border_width
+            )
             widget['label'].configure(bg=color)
+            if widget.get('kps_label'):
+                widget['kps_label'].configure(bg=color)
             widget['pressed'] = True
             
             # Trigger animation if enabled
@@ -582,8 +598,14 @@ class OverlayWindow:
         else:
             # Key is released - return to normal
             color = appearance.get('inactive_key_color', '#333333')
-            widget['frame'].configure(bg=color)
+            widget['frame'].configure(
+                bg=color,
+                highlightbackground=border_color,
+                highlightthickness=border_width
+            )
             widget['label'].configure(bg=color)
+            if widget.get('kps_label'):
+                widget['kps_label'].configure(bg=color)
             widget['pressed'] = False
             
     def _on_close(self):

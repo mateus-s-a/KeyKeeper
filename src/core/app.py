@@ -55,6 +55,9 @@ class KeyboardOverlayApp:
         # Set profile manager in overlay for menu access
         self.overlay.profile_manager = self.profile_manager
         
+        # Set app reference in overlay for updates
+        self.overlay.app = self
+        
         # Initialize keyboard listener
         self.keyboard_listener = KeyboardListener(
             keys_to_monitor=self.config.get('keys_to_monitor', ['d', 'f', 'j', 'k']),
@@ -77,6 +80,53 @@ class KeyboardOverlayApp:
         # Record press in statistics (only on press, not release)
         if pressed and self.statistics:
             self.statistics.record_press(key)
+    
+    def update_keyboard_listener(self, new_keys):
+        """
+        Update the keyboard listener with new keys to monitor.
+        
+        Args:
+            new_keys: List of keys to monitor
+        """
+        print(f"Updating keyboard listener with new keys: {new_keys}")
+        
+        # Stop old listener
+        if self.keyboard_listener:
+            self.keyboard_listener.stop()
+        
+        # Create new listener with updated keys
+        self.keyboard_listener = KeyboardListener(
+            keys_to_monitor=new_keys,
+            callback=self.on_key_event
+        )
+        
+        # Start the new listener
+        self.keyboard_listener.start()
+        
+        print("Keyboard listener updated successfully")
+    
+    def update_keyboard_listener(self, new_keys):
+        """
+        Update the keyboard listener with new keys to monitor.
+        
+        Args:
+            new_keys: List of new keys to monitor
+        """
+        print(f"Updating keyboard listener to monitor: {new_keys}")
+        
+        # Stop old listener
+        if self.keyboard_listener:
+            self.keyboard_listener.stop()
+        
+        # Create new listener with updated keys
+        self.keyboard_listener = KeyboardListener(
+            keys_to_monitor=new_keys,
+            callback=self.on_key_event
+        )
+        
+        # Start new listener
+        self.keyboard_listener.start()
+        print(f"Keyboard listener updated successfully")
         
     def run(self):
         """Start the application."""

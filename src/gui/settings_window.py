@@ -514,7 +514,7 @@ class SettingsWindow:
         # Could enable/disable stat widgets here
     
     def _preview_theme(self):
-        """Preview selected theme."""
+        """Preview selected theme with color swatches."""
         selection = self.themes_list.curselection()
         if not selection:
             messagebox.showwarning("No Selection", "Please select a theme to preview")
@@ -523,16 +523,59 @@ class SettingsWindow:
         theme_name = self.themes_list.get(selection[0])
         preview = self.theme_manager.get_theme_preview(theme_name)
         
-        # Show preview dialog
-        msg = f"Theme: {preview['name']}\n\n"
-        msg += f"Description: {preview['description']}\n\n"
-        msg += f"Background: {preview['background']}\n"
-        msg += f"Active Key: {preview['active_key']}\n"
-        msg += f"Inactive Key: {preview['inactive_key']}\n"
-        msg += f"Text: {preview['text']}\n"
-        msg += f"Border: {preview['border']}"
+        # Create custom preview dialog
+        dialog = tk.Toplevel(self.window)
+        dialog.title(f"Theme Preview - {preview['name']}")
+        dialog.geometry("400x350")
+        dialog.transient(self.window)
+        dialog.grab_set()
         
-        messagebox.showinfo("Theme Preview", msg)
+        # Main frame
+        main_frame = ttk.Frame(dialog, padding=20)
+        main_frame.pack(fill='both', expand=True)
+        
+        # Theme name
+        ttk.Label(main_frame, text=preview['name'], 
+                 font=('Arial', 16, 'bold')).pack(pady=(0, 5))
+        
+        # Description
+        ttk.Label(main_frame, text=preview['description'],
+                 wraplength=350).pack(pady=(0, 20))
+        
+        # Color previews
+        colors_frame = ttk.LabelFrame(main_frame, text="Colors", padding=10)
+        colors_frame.pack(fill='both', expand=True, pady=10)
+        
+        color_items = [
+            ('Background', preview['background']),
+            ('Active Key', preview['active_key']),
+            ('Inactive Key', preview['inactive_key']),
+            ('Text', preview['text']),
+            ('Border', preview['border'])
+        ]
+        
+        for label, color in color_items:
+            row_frame = ttk.Frame(colors_frame)
+            row_frame.pack(fill='x', pady=5)
+            
+            # Label
+            ttk.Label(row_frame, text=f"{label}:", width=15, anchor='w').pack(side='left')
+            
+            # Color swatch (larger and with border)
+            swatch_frame = tk.Frame(row_frame, bg='black', padx=1, pady=1)
+            swatch_frame.pack(side='left', padx=(0, 10))
+            
+            color_swatch = tk.Canvas(swatch_frame, width=60, height=30, 
+                                    bg=color, highlightthickness=0)
+            color_swatch.pack()
+            
+            # Hex value (more prominent)
+            ttk.Label(row_frame, text=color, 
+                     font=('Courier', 11, 'bold')).pack(side='left')
+        
+        # Close button
+        ttk.Button(dialog, text="Close", 
+                  command=dialog.destroy).pack(pady=10)
     
     def _apply_selected_theme(self):
         """Apply the selected theme."""
