@@ -75,15 +75,6 @@ Edit `config/default_config.json` to customize:
 5. Each key displays its individual KPS underneath the key label
 6. Use the configuration file or GUI settings for advanced customization
 
-## Development
-
-This project is structured for easy expansion and maintenance:
-
-- **Modular Design**: Each component is separated into its own module
-- **Scalable Architecture**: Easy to add new features and statistics
-- **Theme System**: Simple to create and apply new visual themes
-- **Configuration-Driven**: Most behavior can be modified without code changes
-
 ## Future Features
 
 - [x] Keys per second (KPS) display
